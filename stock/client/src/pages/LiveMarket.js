@@ -11,7 +11,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import useWebSocket from '../hooks/useWebSocket';
+
 
 const LiveMarket = () => {
   const [marketData, setMarketData] = useState([]);
@@ -28,9 +28,7 @@ const LiveMarket = () => {
     buyPrice: ''
   });
 
-  // WebSocket for live updates
-  const symbols = marketData.map(stock => stock.symbol);
-  const { stockData: liveStockData, isConnected } = useWebSocket(null, symbols);
+
 
   useEffect(() => {
     fetchMarketData();
@@ -90,17 +88,13 @@ const LiveMarket = () => {
   };
 
   const getMergedStockData = (stock) => {
-    const liveData = liveStockData[stock.symbol];
-    if (liveData) {
-      return {
-        ...stock,
-        currentPrice: liveData.currentPrice,
-        change: liveData.change,
-        changePercent: liveData.changePercent,
-        isLive: true
-      };
-    }
-    return { ...stock, isLive: false };
+    // Return stock data as-is since we're not using WebSocket anymore
+    return {
+      ...stock,
+      currentPrice: stock.currentPrice || 0,
+      change: stock.change || 0,
+      changePercent: stock.changePercent || 0
+    };
   };
 
   const openAddModal = (stock) => {
@@ -147,10 +141,7 @@ const LiveMarket = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Live Market</h1>
           <div className="flex items-center mt-2 space-x-4">
-            <div className={`flex items-center text-sm ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-              <Activity className={`w-4 h-4 mr-2 ${isConnected ? 'animate-pulse' : ''}`} />
-              {isConnected ? 'Live Updates Active' : 'Live Updates Disconnected'}
-            </div>
+
             <span className="text-sm text-gray-500">
               Last updated: {new Date().toLocaleTimeString()}
             </span>
@@ -291,9 +282,6 @@ const LiveMarket = () => {
                     <td className="py-3 px-4">
                       <div className="flex items-center">
                         <span className="font-medium text-gray-900">{stock.symbol}</span>
-                        {mergedStock.isLive && (
-                          <div className="ml-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        )}
                       </div>
                     </td>
                     <td className="py-3 px-4">

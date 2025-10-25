@@ -58,7 +58,11 @@ const AIInsights = () => {
   const sendMessage = async (message = inputMessage) => {
     if (!message.trim()) return;
 
-    const userMessage = { type: 'user', content: message, timestamp: new Date() };
+    const userMessage = { 
+      type: 'user', 
+      content: message, 
+      timestamp: new Date().toISOString()
+    };
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setLoading(true);
@@ -71,9 +75,9 @@ const AIInsights = () => {
 
       const aiMessage = { 
         type: 'ai', 
-        content: response.data.insight, 
-        timestamp: new Date(),
-        portfolioSummary: response.data.portfolioSummary
+        content: response.data.insight || 'No insight available', 
+        timestamp: new Date().toISOString(),
+        portfolioSummary: response.data.portfolioSummary || null
       };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
@@ -81,7 +85,7 @@ const AIInsights = () => {
       const errorMessage = { 
         type: 'error', 
         content: 'Sorry, I couldn\'t process your request. Please try again.', 
-        timestamp: new Date() 
+        timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -240,12 +244,16 @@ const AIInsights = () => {
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap">
-                          {typeof message.content === 'string' ? message.content : JSON.stringify(message.content)}
+                          {message.content}
                         </p>
+                        {message.portfolioSummary && (
+                          <div className="mt-2 text-xs border-t pt-2">
+                            <div>Total Value: ${message.portfolioSummary.totalCurrentValue?.toFixed(2)}</div>
+                            <div>Total P&L: ${message.portfolioSummary.totalProfitLoss?.toFixed(2)} ({message.portfolioSummary.totalProfitLossPercent?.toFixed(2)}%)</div>
+                          </div>
+                        )}
                         <p className="text-xs mt-1 opacity-70">
-                          {message.timestamp && typeof message.timestamp.toLocaleTimeString === 'function' 
-                            ? message.timestamp.toLocaleTimeString() 
-                            : 'Now'}
+                          {new Date(message.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>

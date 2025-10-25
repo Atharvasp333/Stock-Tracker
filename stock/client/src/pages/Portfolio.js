@@ -117,11 +117,15 @@ const Portfolio = () => {
   };
 
   const calculateStockMetrics = (stock) => {
-    const currentPrice = stockPrices[stock.symbol]?.currentPrice || stock.buyPrice;
-    const invested = stock.quantity * stock.buyPrice;
-    const currentValue = stock.quantity * currentPrice;
+    if (!stock || typeof stock !== 'object') return null;
+    
+    const currentPrice = stockPrices[stock.symbol]?.currentPrice || stock.buyPrice || 0;
+    const quantity = parseFloat(stock.quantity) || 0;
+    const buyPrice = parseFloat(stock.buyPrice) || 0;
+    const invested = quantity * buyPrice;
+    const currentValue = quantity * currentPrice;
     const profitLoss = currentValue - invested;
-    const profitLossPercent = (profitLoss / invested) * 100;
+    const profitLossPercent = invested > 0 ? (profitLoss / invested) * 100 : 0;
 
     return {
       currentPrice,
@@ -188,7 +192,14 @@ const Portfolio = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {portfolio.stocks.map((stock) => {
+                  // Ensure stock is a valid object
+                  if (!stock || typeof stock !== 'object' || !stock.symbol) {
+                    console.warn('Invalid stock object:', stock);
+                    return null;
+                  }
+                  
                   const metrics = calculateStockMetrics(stock);
+                  if (!metrics) return null;
                   
                   return (
                     <tr key={stock._id} className="hover:bg-gray-50">

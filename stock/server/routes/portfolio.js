@@ -129,7 +129,8 @@ router.get('/live', auth, async (req, res) => {
     const promises = portfolio.stocks.map(async (stock) => {
       try {
         const response = await axios.get(
-          `https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${apiKey}`
+          `https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${apiKey}`,
+          { timeout: 5000 } // 5 second timeout
         );
 
         if (response.data.c === 0) {
@@ -138,6 +139,10 @@ router.get('/live', auth, async (req, res) => {
             currentPrice: stock.buyPrice,
             change: 0,
             changePercent: 0,
+            invested: stock.quantity * stock.buyPrice,
+            currentValue: stock.quantity * stock.buyPrice,
+            profitLoss: 0,
+            profitLossPercent: 0,
             error: 'No live data available'
           };
         }
@@ -165,13 +170,23 @@ router.get('/live', auth, async (req, res) => {
           previousClose: response.data.pc
         };
       } catch (error) {
-        console.error(`Error fetching live data for ${stock.symbol}:`, error.message);
+        // Handle rate limiting and other API errors gracefully
+        const isRateLimit = error.response?.status === 429 || error.response?.status === 403;
+        if (!isRateLimit) {
+          console.error(`Error fetching live data for ${stock.symbol}:`, error.message);
+        }
+        
+        const invested = stock.quantity * stock.buyPrice;
         return {
           ...stock.toObject(),
           currentPrice: stock.buyPrice,
           change: 0,
           changePercent: 0,
-          error: 'Failed to fetch live data'
+          invested,
+          currentValue: invested,
+          profitLoss: 0,
+          profitLossPercent: 0,
+          error: isRateLimit ? 'Rate limited - using cached data' : 'Failed to fetch live data'
         };
       }
     });

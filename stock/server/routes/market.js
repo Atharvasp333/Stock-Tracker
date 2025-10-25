@@ -2,6 +2,22 @@ const express = require('express');
 const axios = require('axios');
 const auth = require('../middleware/auth');
 
+// Simple in-memory cache
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+const getCachedData = (key) => {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+const setCachedData = (key, data) => {
+  cache.set(key, { data, timestamp: Date.now() });
+};
+
 const router = express.Router();
 
 // Predefined list of popular stocks for market overview
@@ -13,6 +29,12 @@ const POPULAR_STOCKS = [
 // Get live market data for popular stocks
 router.get('/live', auth, async (req, res) => {
   try {
+    // Check cache first
+    const cachedData = getCachedData('market-live');
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
     const apiKey = process.env.FINNHUB_API_KEY;
     
     if (!apiKey) {
@@ -22,8 +44,8 @@ router.get('/live', auth, async (req, res) => {
     const promises = POPULAR_STOCKS.map(async (symbol) => {
       try {
         const [quoteResponse, profileResponse] = await Promise.all([
-          axios.get(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`),
-          axios.get(`https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`)
+          axios.get(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`, { timeout: 5000 }),
+          axios.get(`https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${apiKey}`, { timeout: 5000 })
         ]);
 
         if (quoteResponse.data.c === 0) {
@@ -44,13 +66,19 @@ router.get('/live', auth, async (req, res) => {
           industry: profileResponse.data.finnhubIndustry || null
         };
       } catch (error) {
-        console.error(`Error fetching data for ${symbol}:`, error.message);
+        const isRateLimit = error.response?.status === 429 || error.response?.status === 403;
+        if (!isRateLimit) {
+          console.error(`Error fetching data for ${symbol}:`, error.message);
+        }
         return null;
       }
     });
 
     const results = await Promise.all(promises);
     const validResults = results.filter(result => result !== null);
+
+    // Cache the results
+    setCachedData('market-live', validResults);
 
     res.json(validResults);
   } catch (error) {

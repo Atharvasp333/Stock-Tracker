@@ -22,7 +22,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import useWebSocket from '../hooks/useWebSocket';
+
 
 ChartJS.register(
   CategoryScale,
@@ -41,9 +41,7 @@ const EnhancedDashboard = () => {
   const [filterBy, setFilterBy] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Get symbols for WebSocket subscription
-  const symbols = portfolioData?.liveData?.map(stock => stock.symbol) || [];
-  const { stockData: liveStockData, isConnected } = useWebSocket(null, symbols);
+
 
   useEffect(() => {
     fetchPortfolioData();
@@ -67,18 +65,7 @@ const EnhancedDashboard = () => {
   };
 
   const getMergedStockData = (stock) => {
-    const liveData = liveStockData[stock.symbol];
-    if (liveData) {
-      return {
-        ...stock,
-        currentPrice: liveData.currentPrice,
-        change: liveData.change,
-        changePercent: liveData.changePercent,
-        currentValue: stock.quantity * liveData.currentPrice,
-        profitLoss: (stock.quantity * liveData.currentPrice) - (stock.quantity * stock.buyPrice),
-        profitLossPercent: (((stock.quantity * liveData.currentPrice) - (stock.quantity * stock.buyPrice)) / (stock.quantity * stock.buyPrice)) * 100
-      };
-    }
+    // Return stock data as-is since we're not using WebSocket anymore
     return stock;
   };
 
@@ -182,10 +169,6 @@ const EnhancedDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Enhanced Dashboard</h1>
           <div className="flex items-center mt-2 space-x-4">
-            <div className={`flex items-center text-sm ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
-              <div className={`w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              {isConnected ? 'Live Data Connected' : 'Disconnected'}
-            </div>
             <span className="text-sm text-gray-500">
               Last updated: {new Date().toLocaleTimeString()}
             </span>
@@ -269,14 +252,14 @@ const EnhancedDashboard = () => {
       </div>
 
       {/* Portfolio Insights */}
-      {summary.bestPerformer && (
+      {summary.bestPerformer && summary.worstPerformer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card bg-green-50 border-green-200">
             <div className="flex items-center">
               <Award className="h-6 w-6 text-green-600 mr-3" />
               <div>
                 <p className="text-sm font-medium text-green-800">Best Performer</p>
-                <p className="text-lg font-bold text-green-900">{summary.bestPerformer.symbol}</p>
+                <p className="text-lg font-bold text-green-900">{summary.bestPerformer?.symbol || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -286,7 +269,7 @@ const EnhancedDashboard = () => {
               <AlertTriangle className="h-6 w-6 text-red-600 mr-3" />
               <div>
                 <p className="text-sm font-medium text-red-800">Needs Attention</p>
-                <p className="text-lg font-bold text-red-900">{summary.worstPerformer.symbol}</p>
+                <p className="text-lg font-bold text-red-900">{summary.worstPerformer?.symbol || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -325,7 +308,14 @@ const EnhancedDashboard = () => {
       {/* Stock Performance Cards */}
       {sortedStocks.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedStocks.map((stock) => (
+          {sortedStocks.map((stock) => {
+            // Ensure stock is a valid object with required properties
+            if (!stock || typeof stock !== 'object' || !stock.symbol) {
+              console.warn('Invalid stock object:', stock);
+              return null;
+            }
+            
+            return (
             <div key={stock._id} className="card hover:shadow-lg transition-shadow duration-200">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -384,7 +374,8 @@ const EnhancedDashboard = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="card text-center py-12">

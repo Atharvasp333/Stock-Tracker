@@ -223,11 +223,11 @@ const EnhancedAIInsights = () => {
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-gray-600">Best Performer:</span>
-                    <span className="font-medium text-green-600">{summary.bestPerformer}</span>
+                    <span className="font-medium text-green-600">{summary.bestPerformer?.symbol || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Needs Attention:</span>
-                    <span className="font-medium text-red-600">{summary.worstPerformer}</span>
+                    <span className="font-medium text-red-600">{summary.worstPerformer?.symbol || 'N/A'}</span>
                   </div>
                 </div>
               )}
