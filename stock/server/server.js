@@ -23,7 +23,11 @@ const limiter = rateLimit({
 // Middleware
 app.use(limiter);
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://stock-tracker-q8uc6l5z4-atharvas-projects-b215d6f2.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -32,8 +36,8 @@ app.use(express.json());
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Stock Portfolio API Server', 
+  res.json({
+    message: 'Stock Portfolio API Server',
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
