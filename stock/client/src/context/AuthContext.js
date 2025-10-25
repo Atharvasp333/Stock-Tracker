@@ -17,7 +17,11 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios defaults
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  console.log('API_URL configured as:', API_URL);
+  
   axios.defaults.baseURL = API_URL;
+  axios.defaults.timeout = 10000; // 10 second timeout
+  axios.defaults.withCredentials = true;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -42,16 +46,33 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    console.log('Attempting login with:', { email, API_URL });
-    const response = await axios.post('/auth/login', { email, password });
-    console.log('Login response:', response.data);
-    const { token, user } = response.data;
-    
-    localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(user);
-    
-    return response.data;
+    try {
+      console.log('Attempting login with:', { email, API_URL });
+      console.log('Full URL will be:', `${API_URL}/auth/login`);
+      
+      const response = await axios.post('/auth/login', { email, password }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log('Login response:', response.data);
+      const { token, user } = response.data;
+      
+      localStorage.setItem('token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(user);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url
+      });
+      throw error;
+    }
   };
 
   const register = async (name, email, password) => {

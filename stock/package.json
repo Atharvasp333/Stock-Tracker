@@ -4,6 +4,8 @@
   "description": "Full-stack stock portfolio tracker with live data and AI insights",
   "main": "server/server.js",
   "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "cd server && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
     "client": "cd client && npm start",
