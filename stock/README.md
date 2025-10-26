@@ -75,8 +75,10 @@ A full-stack responsive web application for tracking stock portfolios with real-
 
 2. **Install dependencies**
    ```bash
-   npm run install-all
+   npm install
    ```
+   
+   This will automatically install dependencies for both client and server via the postinstall script.
 
 3. **Environment Setup**
    ```bash

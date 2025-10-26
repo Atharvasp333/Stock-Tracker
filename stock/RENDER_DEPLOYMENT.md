@@ -61,12 +61,18 @@ GEMINI_API_KEY=your_gemini_api_key
 Before deploying, test the production build locally:
 
 ```bash
-# Build the client
-npm run render-build
+# Install all dependencies (client + server)
+npm install
 
-# Start in production mode
+# Build the client
+npm run build
+
+# Start in production mode (Windows)
 set NODE_ENV=production
 npm start
+
+# Or on Mac/Linux
+NODE_ENV=production npm start
 ```
 
 Visit http://localhost:5000 (note: not 3000!)
