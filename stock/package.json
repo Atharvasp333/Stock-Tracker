@@ -6,11 +6,10 @@
   "scripts": {
     "postinstall": "cd server && npm install && cd ../client && npm install",
     "build": "cd client && npm run build",
-    "start": "node server/server.js",
+    "start": "NODE_ENV=production node server/server.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
-    "client": "cd client && npm start",
-    "render-build": "cd server && npm install && cd ../client && npm install && npm run build"
+    "client": "cd client && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
