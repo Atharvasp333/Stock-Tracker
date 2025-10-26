@@ -63,28 +63,12 @@ app.options('*', (req, res) => {
   res.sendStatus(200);
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Stock Portfolio API Server',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      portfolio: '/api/portfolio',
-      stocks: '/api/stocks',
-      ai: '/api/ai',
-      market: '/api/market'
-    }
-  });
-});
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/stocks', stockRoutes);
@@ -93,12 +77,28 @@ app.use('/api/market', marketRoutes);
 
 // Serve static files from React build in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
+  const clientBuildPath = path.join(__dirname, '../client/build');
+  console.log('Serving static files from:', clientBuildPath);
   
+  app.use(express.static(clientBuildPath));
+  
+  // All non-API routes serve the React app
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
   });
-}
+} else {
+  // Development mode - just show API info
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Stock Portfolio API Server',
+      version: '1.0.0',
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth',
+        portfolio: '/api/portfolio',
+        stocks: '/api/stocks',
+        ai: '/api/ai',
+        market: '/a
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock-portfolio')
