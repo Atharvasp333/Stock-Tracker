@@ -95,6 +95,8 @@ A full-stack responsive web application for tracking stock portfolios with real-
    ```
 
 4. **Start the application**
+   
+   For development (runs both client and server):
    ```bash
    npm run dev
    ```
@@ -102,6 +104,13 @@ A full-stack responsive web application for tracking stock portfolios with real-
    This will start:
    - Backend server on http://localhost:5000
    - Frontend on http://localhost:3000
+   
+   For production testing (unified server):
+   ```bash
+   npm run render-build
+   NODE_ENV=production npm start
+   ```
+   Then visit http://localhost:5000
 
 ## 📁 Project Structure
 
@@ -210,19 +219,52 @@ cd client
 npm run build
 ```
 
-## 🚀 Deployment
+## 🚀 Deployment on Render
 
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set build command: `cd client && npm run build`
-3. Set output directory: `client/build`
-4. Add environment variable: `REACT_APP_API_URL=your_backend_url`
+This application is configured for unified deployment on Render (both client and server together).
 
-### Backend (Render/Railway)
-1. Connect your GitHub repository
-2. Set build command: `cd server && npm install`
-3. Set start command: `cd server && npm start`
-4. Add all environment variables from `.env`
+### Steps to Deploy:
+
+1. **Push your code to GitHub**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+   ```
+
+2. **Create a new Web Service on Render**
+   - Go to https://render.com
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Configure the service:
+     - **Name**: stock-portfolio-tracker
+     - **Environment**: Node
+     - **Build Command**: `npm run render-build`
+     - **Start Command**: `npm start`
+     - **Instance Type**: Free (or your preferred tier)
+
+3. **Add Environment Variables**
+   In the Render dashboard, add these environment variables:
+   ```
+   NODE_ENV=production
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret_key
+   FINNHUB_API_KEY=your_finnhub_api_key
+   GEMINI_API_KEY=your_gemini_api_key
+   PORT=10000
+   ```
+
+4. **Deploy**
+   - Click "Create Web Service"
+   - Render will automatically build and deploy your app
+   - Your app will be available at: `https://your-app-name.onrender.com`
+
+### Notes:
+- The server serves the React build in production
+- Both frontend and backend run on the same domain
+- No CORS issues since everything is on one server
+- Free tier may spin down after inactivity (takes ~30s to wake up)
 
 ## 🤝 Contributing
 

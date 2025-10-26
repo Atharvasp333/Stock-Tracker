@@ -30,7 +30,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      /\.vercel\.app$/  // Allow any vercel app
+      /\.onrender\.com$/  // Allow any Render app
     ];
     
     const isAllowed = allowedOrigins.some(allowedOrigin => {
@@ -91,7 +91,14 @@ app.use('/api/stocks', stockRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/market', marketRoutes);
 
-
+// Serve static files from React build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock-portfolio')
@@ -102,12 +109,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock-por
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
   res.status(500).json({ message: 'Internal server error', error: err.message });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ message: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 5000;
