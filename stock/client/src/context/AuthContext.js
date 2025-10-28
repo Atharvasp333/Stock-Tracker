@@ -16,7 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Set up axios defaults
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // In production (Render), use relative URL since frontend and backend are on same domain
+  // In development, use localhost:5000
+  const API_URL = process.env.NODE_ENV === 'production' 
+    ? '/api' 
+    : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+  
   console.log('API_URL configured as:', API_URL);
   
   axios.defaults.baseURL = API_URL;
