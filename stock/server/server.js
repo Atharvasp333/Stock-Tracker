@@ -98,7 +98,11 @@ if (process.env.NODE_ENV === 'production') {
         portfolio: '/api/portfolio',
         stocks: '/api/stocks',
         ai: '/api/ai',
-        market: '/a
+        market: '/api/market'
+      }
+    });
+  });
+}
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock-portfolio')
